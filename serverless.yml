@@ -1,0 +1,55 @@
+service: to-do
+frameworkVersion: "3"
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: sa-east-1
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:*
+      Resource: "arn:aws:dynamodb:sa-east-1:633679531561:table/Tasks"
+
+functions:
+  createTask:
+    handler: handler/createTask.handler
+    events:
+      - http:
+          path: tasks
+          method: post
+  getTask:
+    handler: handler/getTask.handler
+    events:
+      - http:
+          path: tasks/{taskId}
+          method: get
+  updateTask:
+    handler: handler/updateTask.handler
+    events:
+      - http:
+          path: tasks/{taskId}
+          method: patch
+  deleteTask:
+    handler: handler/deleteTask.handler
+    events:
+      - http:
+          path: tasks/{taskId}
+          method: delete
+
+resources:
+  Resources:
+    TasksTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: Tasks
+        AttributeDefinitions:
+          - AttributeName: taskId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: taskId
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+  
